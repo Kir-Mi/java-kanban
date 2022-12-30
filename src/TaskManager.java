@@ -43,7 +43,7 @@ public class TaskManager {
         task.setStatus("NEW");
         tasks.put(counterId, task);
         counterId++;
-        return task.getId(); //
+        return task.getId();
     }
 
     public int createEpic(Epic epic) {
@@ -51,7 +51,7 @@ public class TaskManager {
         epic.setStatus("NEW");
         epics.put(counterId, epic);
         counterId++;
-        return epic.getId(); //
+        return epic.getId();
     }
 
     public int createSubtask(Subtask subtask, int epicId) {
@@ -69,7 +69,7 @@ public class TaskManager {
         epics.put(epicId, epic);
 
         counterId++;
-        return subtask.getId(); //
+        return subtask.getId();
     }
 
     public void updateTask(Task task) {
@@ -89,25 +89,7 @@ public class TaskManager {
         }
         subtasks.put(subtask.getId(), subtask);  // если статус поменялся - пересчитываем статус эпика
         Epic epic = epics.get(subtask.getEpicId());
-        ArrayList<Integer> subId = epic.getSubtaskId();
-        int statusNew = 0;
-        int statusDone = 0;
-        for (Integer id : subId) {
-            String status = subtasks.get(id).getStatus();
-            if (status.equals("NEW")) {
-                statusNew++;
-            } else {
-                statusDone++;
-            }
-        }
-        if (statusNew != 0 && statusDone != 0) {
-            epic.setStatus("IN_PROGRESS");
-        } else if (statusDone != 0) {
-            epic.setStatus("DONE");
-        } else {
-            epic.setStatus("NEW");
-        }
-        epics.put(epic.getId(), epic);
+        changeEpicStatus(epic);
     }
 
     public void deleteTask(int id) {
@@ -127,6 +109,22 @@ public class TaskManager {
         subtasks.remove(id);
         ArrayList<Integer> idList = epic.getSubtaskId();
         idList.remove(id);//чтобы сработал как удаление по значению, а не по индексу, передаем в метод Integer, а не int
+        epic.setSubtaskId(idList);
+        changeEpicStatus(epic);
+    }
+
+    public ArrayList<Subtask> getAllSubtasksByEpic(int id) {
+        ArrayList<Subtask> subtaskList = new ArrayList<>();
+        Epic epic = epics.get(id);
+        ArrayList<Integer> subtaskId = epic.getSubtaskId();
+        for (Integer subId : subtaskId) {
+            subtaskList.add(subtasks.get(subId));
+        }
+        return subtaskList;
+    }
+
+    public void changeEpicStatus(Epic epic) {
+        ArrayList<Integer> idList = epic.getSubtaskId();
         int statusNew = 0;
         int statusDone = 0;
         for (Integer subId : idList) {
@@ -145,15 +143,5 @@ public class TaskManager {
             epic.setStatus("NEW");
         }
         epics.put(epic.getId(), epic);
-    }
-
-    public ArrayList<Subtask> getAllSubtasksByEpic(int id) {
-        ArrayList<Subtask> subtaskList = new ArrayList<>();
-        Epic epic = epics.get(id);
-        ArrayList<Integer> subtaskId = epic.getSubtaskId();
-        for (Integer subId : subtaskId) {
-            subtaskList.add(subtasks.get(subId));
-        }
-        return subtaskList;
     }
 }

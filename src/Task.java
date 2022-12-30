@@ -9,16 +9,6 @@ public class Task {
         this.description = description;
     }
 
-    @Override
-    public String toString() {
-        String result = "Task{" +
-                "title='" + title + '\'' +
-                ", description='" + description + '\'' +
-                ", id=" + id +
-                ", status='" + status + '\'' + '}';
-        return result;
-    }
-
     public int getId() {
         return id;
     }
@@ -49,5 +39,15 @@ public class Task {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    @Override
+    public String toString() {
+        String result = "Task{" +
+                "title='" + title + '\'' +
+                ", description='" + description + '\'' +
+                ", id=" + id +
+                ", status='" + status + '\'' + '}';
+        return result;
     }
 }

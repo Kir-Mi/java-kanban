@@ -6,6 +6,14 @@ public class Subtask extends Task {
         this.epicId = epicId;
     }
 
+    public int getEpicId() {
+        return epicId;
+    }
+
+    public void setEpicId(int epicId) {
+        this.epicId = epicId;
+    }
+
     @Override
     public String toString() {
         String result = "Subtask{" +
@@ -15,13 +23,5 @@ public class Subtask extends Task {
                 ", status='" + super.getStatus() + '\'' +
                 ", epicId =" + epicId + '}';
         return result;
-    }
-
-    public int getEpicId() {
-        return epicId;
-    }
-
-    public void setEpicId(int epicId) {
-        this.epicId = epicId;
     }
 }
