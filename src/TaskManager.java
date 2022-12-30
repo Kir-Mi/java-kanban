@@ -109,7 +109,6 @@ public class TaskManager {
         subtasks.remove(id);
         ArrayList<Integer> idList = epic.getSubtaskId();
         idList.remove(id);//чтобы сработал как удаление по значению, а не по индексу, передаем в метод Integer, а не int
-        epic.setSubtaskId(idList);
         changeEpicStatus(epic);
     }
 
