@@ -1,6 +1,6 @@
 public class Task {
     private int id;
-    private String status;
+    private TaskStatus status;
     private String title;
     private String description;
 
@@ -17,11 +17,11 @@ public class Task {
         this.id = id;
     }
 
-    public String getStatus() {
+    public TaskStatus getStatus() {
         return status;
     }
 
-    public void setStatus(String status) {
+    public void setStatus(TaskStatus status) {
         this.status = status;
     }
 

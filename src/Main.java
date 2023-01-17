@@ -1,7 +1,8 @@
 public class Main {
 
     public static void main(String[] args) {
-        TaskManager taskManager = new TaskManager();
+        TaskManager taskManager = Managers.getDefault();
+
 
         // код ниже оставил для удобства тестирования
         Task testTask1 = new Task("задача1", "описание задачи1"); // создаем задачи
@@ -21,39 +22,31 @@ public class Main {
         Subtask testSubtask3 = new Subtask("субтаск3", "описание субтаска3", epicId2);
         int subId3 = taskManager.createSubtask(testSubtask3, epicId2);
 
-        System.out.println("Печатаем списки задач");
-        System.out.println(taskManager.getTaskList());
-        System.out.println(taskManager.getEpicList());
-        System.out.println(taskManager.getSubtaskList());
-
-        Task testTask11 = new Task("задача1", "новое описание задачи1"); // обновляем задачи
-        testTask11.setStatus("DONE");
-        testTask11.setId(taskId1);
-        taskManager.updateTask(testTask11);
-
-        Subtask testSubtask11 = new Subtask("субтаск1", "новое описание субтаска1", epicId1);
-        testSubtask11.setStatus("DONE");
-        testSubtask11.setId(subId1);
-        taskManager.updateSubtask(testSubtask11);
-        Subtask testSubtask22 = new Subtask("субтаск2", "новое описание субтаска2", epicId2);
-        testSubtask22.setStatus("DONE");
-        testSubtask22.setId(subId2);
-        taskManager.updateSubtask(testSubtask22);
-
-        System.out.println("Печатаем задачи после обновления");
-        System.out.println(taskManager.getTaskList());
-        System.out.println(taskManager.getEpicList());
-        System.out.println(taskManager.getSubtaskList());
-        System.out.println("Печатаем подзадачи эпика");
-        System.out.println(taskManager.getAllSubtasksByEpic(epicId2));
-
-        taskManager.deleteTask(taskId2); // удаляем задачи
-        taskManager.deleteEpic(epicId1);
-        taskManager.deleteSubtask(subId3);
-
-        System.out.println("Печатаем задачи после удаления некоторых");
-        System.out.println(taskManager.getTaskList());
-        System.out.println(taskManager.getEpicList());
-        System.out.println(taskManager.getSubtaskList());
+        taskManager.getTaskById(taskId1);  // проверяем как формируется список
+        System.out.println(taskManager.getHistory());
+        taskManager.getTaskById(taskId2);
+        System.out.println(taskManager.getHistory());
+        taskManager.deleteTask(taskId1); // удаляем таск, проверяем чтоб он остался в истории
+        System.out.println(taskManager.getHistory());
+        taskManager.getEpicById(epicId1);
+        System.out.println(taskManager.getHistory());
+        taskManager.getEpicById(epicId2);
+        System.out.println(taskManager.getHistory());
+        taskManager.getTaskById(taskId1);
+        System.out.println(taskManager.getHistory());
+        taskManager.getSubtaskById(subId1);
+        System.out.println(taskManager.getHistory());
+        taskManager.getSubtaskById(subId2);
+        System.out.println(taskManager.getHistory());
+        taskManager.getSubtaskById(subId3);
+        System.out.println(taskManager.getHistory());
+        taskManager.getSubtaskById(subId1);
+        System.out.println(taskManager.getHistory());
+        taskManager.getTaskById(taskId1);
+        System.out.println(taskManager.getHistory());
+        taskManager.getTaskById(taskId2);
+        System.out.println(taskManager.getHistory());
+        taskManager.getSubtaskById(subId2);
+        System.out.println(taskManager.getHistory());
     }
 }
