@@ -1,5 +1,6 @@
+package Task;
+
 import java.util.ArrayList;
-import java.util.Arrays;
 
 public class Epic extends Task {
     private ArrayList<Integer> subtaskId;
@@ -19,7 +20,7 @@ public class Epic extends Task {
 
     @Override
     public String toString() {
-        String result = "Epic{" +
+        String result = "Task.Epic{" +
                 "title='" + super.getTitle() + '\'' +
                 ", description='" + super.getDescription() + '\'' +
                 ", id=" + super.getId() +
