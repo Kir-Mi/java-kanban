@@ -1,6 +1,7 @@
 package Manager;
 
 import Task.*;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -42,7 +43,7 @@ public class InMemoryTaskManager implements TaskManager {
 
     @Override
     public Epic getEpicById(int id) {
-        viewsHistory.add(epics.get(id)); //добавляем просмотренную задачу в список
+        viewsHistory.add(epics.get(id)); //добавляем просмотренную задачу в историю просмотров
         return epics.get(id);
     }
 
@@ -120,6 +121,7 @@ public class InMemoryTaskManager implements TaskManager {
 
     @Override
     public void deleteTask(int id) {
+        viewsHistory.remove(id);
         tasks.remove(id);
     }
 
@@ -127,14 +129,17 @@ public class InMemoryTaskManager implements TaskManager {
     public void deleteEpic(int id) {
         ArrayList<Integer> idList = epics.get(id).getSubtaskId(); // сначала удаляем подзадачи эпика
         for (Integer idSub : idList) {
+            viewsHistory.remove(idSub);
             subtasks.remove(idSub);
         }
+        viewsHistory.remove(id);
         epics.remove(id);
     }
 
     @Override
     public void deleteSubtask(Integer id) {
         Epic epic = epics.get(subtasks.get(id).getEpicId());
+        viewsHistory.remove(id);
         subtasks.remove(id);
         ArrayList<Integer> idList = epic.getSubtaskId();
         idList.remove(id);//чтобы сработал как удаление по значению, а не по индексу, передаем в метод Integer, а не int
