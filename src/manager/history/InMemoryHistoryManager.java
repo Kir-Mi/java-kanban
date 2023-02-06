@@ -1,13 +1,13 @@
-package Manager;
+package manager.history;
 
-import Task.Task;
+import task.Task;
 
 import java.util.HashMap;
 import java.util.List;
 
 public class InMemoryHistoryManager implements HistoryManager {
-    OrderOfViews<Task> orderOfViews = new OrderOfViews<>(); // список последних просмотров
-    HashMap<Integer, Node<Task>> nodeToDelete = new HashMap<>(); // запоминаем какие таски уже смотрели
+    CustomLinkedList<Task> orderOfViews = new CustomLinkedList<>(); // список последних просмотров
+    HashMap<Integer, CustomLinkedList<Task>.Node<Task>> nodeToDelete = new HashMap<>(); // храним просмотренные таски
 
     @Override
     public void remove(int id) {

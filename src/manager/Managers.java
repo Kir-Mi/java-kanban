@@ -1,4 +1,8 @@
-package Manager;
+package manager;
+
+import manager.history.HistoryManager;
+import manager.history.InMemoryHistoryManager;
+import manager.tasks.*;
 
 public final class Managers {
 

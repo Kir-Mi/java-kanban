@@ -1,6 +1,8 @@
-package Manager;
+package main;
 
-import Task.*;
+import manager.Managers;
+import manager.tasks.TaskManager;
+import task.*;
 
 public class Main {
 

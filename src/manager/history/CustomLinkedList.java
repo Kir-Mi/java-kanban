@@ -1,34 +1,49 @@
-package Manager;
+package manager.history;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class OrderOfViews<T> {
+public class CustomLinkedList<T> {
+
+    class Node<E> {
+
+        public E data;
+        public Node<E> next;
+        public Node<E> prev;
+
+        public Node(Node<E> prev, E data, Node<E> next) {
+            this.data = data;
+            this.next = next;
+            this.prev = prev;
+        }
+    }
 
     private Node<T> tail;
     private Node<T> head;
     private int size = 0;
 
     public void removeNode(Node<T> node) {
-        if (node.prev == null & node.next == null) { // если нода единственная
+        Node<T> oldNext = node.next;
+        Node<T> oldPrev = node.prev;
+        if (node.prev == null && node.next == null) { // если нода единственная
             node.data = null;
             head = tail = null;
             size--;
         } else if (node.prev == null) { // если удаляем голову
-            node.next.prev = null;
+            oldNext.prev = null;
             head = node.next;
             node.data = null;
             node.next = null;
             size--;
         } else if (node.next == null) { // если удаляем хвост
-            node.prev.next = null;
+            oldPrev.next = null;
             tail = node.prev;
             node.data = null;
             node.prev = null;
             size--;
         } else {
-            node.next.prev = node.prev;
-            node.prev.next = node.next;
+            oldNext.prev = node.prev;
+            oldPrev.next = node.next;
             node.next = node.prev = null;
             node.data = null;
             size--;
