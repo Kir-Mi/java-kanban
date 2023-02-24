@@ -1,15 +1,19 @@
 package main;
 
-import manager.Managers;
+import manager.tasks.FileBackedTasksManager;
 import manager.tasks.TaskManager;
 import task.*;
+
+import java.nio.file.Path;
 
 public class Main {
 
     public static void main(String[] args) {
-        TaskManager taskManager = Managers.getDefault();
+        TaskManager taskManager = FileBackedTasksManager.loadFromFile(Path.of("src/resources/saveFile.csv"));
 
-        // код ниже оставил для удобства тестирования
+        /* код для тестирования оставил прежний. На гитхабе файл для восстановления, загружается корректно.
+        По итогу запуска программы наполнение файла меняется. Первоначальный запуск без файла тоже работает ок.
+         */
         Task testTask1 = new Task("задача1", "описание задачи1"); // создаем задачи
         int taskId1 = taskManager.createTask(testTask1);
         Task testTask2 = new Task("задача2", "описание задачи2");

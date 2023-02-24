@@ -9,12 +9,14 @@ import java.util.HashMap;
 import java.util.List;
 
 public class InMemoryTaskManager implements TaskManager {
-    private int counterId = 1;
-    HistoryManager viewsHistory = Managers.getDefaultHistory(); // храним историю просмотров
 
-    HashMap<Integer, Task> tasks = new HashMap<>();
-    HashMap<Integer, Subtask> subtasks = new HashMap<>();
-    HashMap<Integer, Epic> epics = new HashMap<>();
+
+    private int counterId = 1;
+    protected HistoryManager viewsHistory = Managers.getDefaultHistory(); // храним историю просмотров
+
+    protected HashMap<Integer, Task> tasks = new HashMap<>();
+    protected HashMap<Integer, Subtask> subtasks = new HashMap<>();
+    protected HashMap<Integer, Epic> epics = new HashMap<>();
 
     @Override
     public List<Task> getHistory() { // метод возвращяет список с просмотренными задачами
@@ -36,8 +38,27 @@ public class InMemoryTaskManager implements TaskManager {
         return new ArrayList<>(subtasks.values());
     }
 
+    public void setCounterId(int counterId) {
+        this.counterId = counterId;
+    }
+
     @Override
     public void deleteAllTasks() {
+        if (!tasks.isEmpty()) { // чистим историю в случае удаления всех задач
+            for (Integer id : tasks.keySet()) {
+                viewsHistory.remove(id);
+            }
+        }
+        if (!subtasks.isEmpty()) {
+            for (Integer id : subtasks.keySet()) {
+                viewsHistory.remove(id);
+            }
+        }
+        if (!epics.isEmpty()) {
+            for (Integer id : epics.keySet()) {
+                viewsHistory.remove(id);
+            }
+        }
         tasks.clear();
         subtasks.clear();
         epics.clear();
