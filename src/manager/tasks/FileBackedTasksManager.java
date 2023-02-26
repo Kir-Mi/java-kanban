@@ -28,61 +28,65 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
         int restoredCounterId = 1;
 
         try {
-            List<String> lines = Files.readAllLines(saveFile); // сохраняем таски по промежуточным мапам
-            for (int i = 1; i < lines.size()-2; i++) {
-                if (lines.get(i) == null && lines.get(i - 1) != null && lines.get(i + 1) != null) {
-                    history = historyFromString(lines.get(i + 1));
-                    break;
-                }
-                Task restoredTask = taskFromString(lines.get(i));
-                if (restoredTask instanceof Epic) {
-                    restoredEpics.put(restoredTask.getId(), (Epic) restoredTask);
-                } else if (restoredTask instanceof Subtask) {
-                    restoredSubtasks.put(restoredTask.getId(), (Subtask) restoredTask);
-                } else {
-                    restoredTasks.put(restoredTask.getId(), restoredTask);
-                }
-            }
-            for (Epic epic : restoredEpics.values()) { // формируем список SubtaskId у эпиков
-                ArrayList<Integer> idList = new ArrayList<>();
-                for (Subtask subtask : restoredSubtasks.values()) {
-                    if (epic.getId() == subtask.getEpicId()) {
-                        idList.add(subtask.getId());
+            try {
+                List<String> lines = Files.readAllLines(saveFile); // сохраняем таски по промежуточным мапам
+                for (int i = 1; i < lines.size() - 2; i++) {
+                    if (lines.get(i) == null && lines.get(i - 1) != null && lines.get(i + 1) != null) {
+                        history = historyFromString(lines.get(i + 1));
+                        break;
+                    }
+                    Task restoredTask = taskFromString(lines.get(i));
+                    if (restoredTask instanceof Epic) {
+                        restoredEpics.put(restoredTask.getId(), (Epic) restoredTask);
+                    } else if (restoredTask instanceof Subtask) {
+                        restoredSubtasks.put(restoredTask.getId(), (Subtask) restoredTask);
+                    } else {
+                        restoredTasks.put(restoredTask.getId(), restoredTask);
                     }
                 }
-                epic.setSubtaskId(idList);
-                recovery.epics.put(epic.getId(), epic);
-            }
-            recovery.tasks = restoredTasks;
-            recovery.subtasks = restoredSubtasks;
+                for (Epic epic : restoredEpics.values()) { // формируем список SubtaskId у эпиков
+                    ArrayList<Integer> idList = new ArrayList<>();
+                    for (Subtask subtask : restoredSubtasks.values()) {
+                        if (epic.getId() == subtask.getEpicId()) {
+                            idList.add(subtask.getId());
+                        }
+                    }
+                    epic.setSubtaskId(idList);
+                    recovery.epics.put(epic.getId(), epic);
+                }
+                recovery.tasks = restoredTasks;
+                recovery.subtasks = restoredSubtasks;
 
-            for (Integer id : history) { // восстанавливаем историю просмотров
-                for (Task task : recovery.tasks.values()) {
-                    if (id == task.getId()) {
-                        recovery.viewsHistory.add(task);
+                for (Integer id : history) { // восстанавливаем историю просмотров
+                    for (Task task : recovery.tasks.values()) {
+                        if (id == task.getId()) {
+                            recovery.viewsHistory.add(task);
+                        }
+                        if (task.getId() > restoredCounterId) { // вычисляем максимальный из имеющихся id
+                            restoredCounterId = task.getId();
+                        }
                     }
-                    if (task.getId() > restoredCounterId) { // вычисляем максимальный из имеющихся id
-                        restoredCounterId = task.getId();
+                    for (Subtask subtask : recovery.subtasks.values()) {
+                        if (id == subtask.getId()) {
+                            recovery.viewsHistory.add(subtask);
+                        }
+                        if (subtask.getId() > restoredCounterId) {
+                            restoredCounterId = subtask.getId();
+                        }
+                    }
+                    for (Epic epic : recovery.epics.values()) {
+                        if (id == epic.getId()) {
+                            recovery.viewsHistory.add(epic);
+                        }
+                        if (epic.getId() > restoredCounterId) {
+                            restoredCounterId = epic.getId();
+                        }
                     }
                 }
-                for (Subtask subtask : recovery.subtasks.values()) {
-                    if (id == subtask.getId()) {
-                        recovery.viewsHistory.add(subtask);
-                    }
-                    if (subtask.getId() > restoredCounterId) {
-                        restoredCounterId = subtask.getId();
-                    }
-                }
-                for (Epic epic : recovery.epics.values()) {
-                    if (id == epic.getId()) {
-                        recovery.viewsHistory.add(epic);
-                    }
-                    if (epic.getId() > restoredCounterId) {
-                        restoredCounterId = epic.getId();
-                    }
-                }
+            } catch (IOException exception) {
+                throw new ManagerSaveException("Ошибка чтения файла");
             }
-        } catch (IOException exception) {
+        } catch (ManagerSaveException exception) {
             System.out.println(exception.getMessage());
         }
         recovery.setCounterId(restoredCounterId + 1); // восстанавливаем значение CounterId
@@ -109,8 +113,7 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
                 for (Task task : tasks.values()) {
                     fileWriter.write(taskToString(task) + "\n");
                 }
-                fileWriter.write("\n");
-                fileWriter.write(historyToString(viewsHistory));
+                fileWriter.write(historyToString(viewsHistory) + "\n");
             } catch (IOException exception) {
                 throw new ManagerSaveException("Ошибка записи в файл");
             }
@@ -136,13 +139,21 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
 
     public static Task taskFromString(String value) {
         String[] split = value.split(",");
-        if (split[1].equals(TaskTypes.TASK.toString())) {
-            return new Task(Integer.parseInt(split[0]), TaskStatus.valueOf(split[3]), split[2], split[4]);
-        } else if (split[1].equals(TaskTypes.SUBTASK.toString())) {
-            return new Subtask(Integer.parseInt(split[0]), TaskStatus.valueOf(split[3]),
-                    split[2], split[4], Integer.parseInt(split[5]));
+
+        String taskId = split[0];
+        String taskType = split[1];
+        String taskTitle = split[2];
+        String taskStatus = split[3];
+        String taskDescription = split[4];
+
+        if (taskType.equals(TaskTypes.TASK.toString())) {
+            return new Task(Integer.parseInt(taskId), TaskStatus.valueOf(taskStatus), taskTitle, taskDescription);
+        } else if (taskType.equals(TaskTypes.SUBTASK.toString())) {
+            String epicId = split[5];
+            return new Subtask(Integer.parseInt(taskId), TaskStatus.valueOf(taskStatus),
+                    taskTitle, taskDescription, Integer.parseInt(epicId));
         } else {
-            return new Epic(Integer.parseInt(split[0]), TaskStatus.valueOf(split[3]), split[2], split[4]);
+            return new Epic(Integer.parseInt(taskId), TaskStatus.valueOf(taskStatus), taskTitle, taskDescription);
         }
     }
 

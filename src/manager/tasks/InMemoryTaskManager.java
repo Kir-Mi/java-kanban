@@ -10,7 +10,6 @@ import java.util.List;
 
 public class InMemoryTaskManager implements TaskManager {
 
-
     private int counterId = 1;
     protected HistoryManager viewsHistory = Managers.getDefaultHistory(); // храним историю просмотров
 

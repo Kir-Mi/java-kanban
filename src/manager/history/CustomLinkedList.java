@@ -5,19 +5,6 @@ import java.util.List;
 
 public class CustomLinkedList<T> {
 
-    class Node<E> {
-
-        public E data;
-        public Node<E> next;
-        public Node<E> prev;
-
-        public Node(Node<E> prev, E data, Node<E> next) {
-            this.data = data;
-            this.next = next;
-            this.prev = prev;
-        }
-    }
-
     private Node<T> tail;
     private Node<T> head;
     private int size = 0;
@@ -71,5 +58,18 @@ public class CustomLinkedList<T> {
             element = element.next;
         }
         return history;
+    }
+
+    class Node<E> {
+
+        public E data;
+        public Node<E> next;
+        public Node<E> prev;
+
+        private Node(Node<E> prev, E data, Node<E> next) {
+            this.data = data;
+            this.next = next;
+            this.prev = prev;
+        }
     }
 }
