@@ -3,10 +3,11 @@ package manager.tasks;
 import task.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.TreeSet;
 
 public interface TaskManager {
 
-    public List<Task> getHistory();
+    List<Task> getHistory();
 
     ArrayList<Task> getTaskList();
 
@@ -43,4 +44,6 @@ public interface TaskManager {
     ArrayList<Subtask> getAllSubtasksByEpic(int id);
 
     void changeEpicStatus(Epic epic);
+
+    TreeSet<Task> getPrioritizedTasks();
 }

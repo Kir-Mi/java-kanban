@@ -1,4 +1,2 @@
-id,type,name,status,description,epic
-5,EPIC,эпик2,NEW,описание эпика2
-2,TASK,задача1,NEW,описание задачи1
-5,2
+id,type,name,status,description,start,duration,epic
+

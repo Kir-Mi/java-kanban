@@ -7,6 +7,8 @@ import task.*;
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -56,6 +58,9 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
                 }
                 recovery.tasks = restoredTasks;
                 recovery.subtasks = restoredSubtasks;
+                for (Epic epic: recovery.epics.values()){   // подсчитываем временные показатели всех эпиков
+                    recovery.calculateEpicDuration(epic.getId());
+                }
 
                 for (Integer id : history) { // восстанавливаем историю просмотров
                     for (Task task : recovery.tasks.values()) {
@@ -90,6 +95,7 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
             System.out.println(exception.getMessage());
         }
         recovery.setCounterId(restoredCounterId + 1); // восстанавливаем значение CounterId
+        recovery.SaveAllTasksByPriority(); // восстанавливаем список тасков по приоритету
         return recovery;
     }
 
@@ -103,7 +109,7 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
                 throw new ManagerSaveException("Ошибка создания файла");
             }
             try (Writer fileWriter = new FileWriter(saveFile.toFile());) {
-                fileWriter.write("id,type,name,status,description,epic\n");
+                fileWriter.write("id,type,name,status,description,start,duration,epic\n");
                 for (Epic epic : epics.values()) {
                     fileWriter.write(taskToString(epic) + "\n");
                     for (int subId : epic.getSubtaskId()) {
@@ -127,13 +133,13 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
             Subtask subtask = (Subtask) task;
             return String.join(",", Integer.toString(subtask.getId()),
                     TaskTypes.SUBTASK.toString(), subtask.getTitle(), subtask.getStatus().toString(),
-                    subtask.getDescription(), Integer.toString(subtask.getEpicId()));
+                    subtask.getDescription(), subtask.getStartTime().toString(), subtask.getDuration().toString(), Integer.toString(subtask.getEpicId()));
         } else if (task instanceof Epic) {
             return String.join(",", Integer.toString(task.getId()), TaskTypes.EPIC.toString(),
                     task.getTitle(), task.getStatus().toString(), task.getDescription());
         } else {
             return String.join(",", Integer.toString(task.getId()), TaskTypes.TASK.toString(),
-                    task.getTitle(), task.getStatus().toString(), task.getDescription());
+                    task.getTitle(), task.getStatus().toString(), task.getDescription(), task.getStartTime().toString(), task.getDuration().toString());
         }
     }
 
@@ -147,11 +153,15 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
         String taskDescription = split[4];
 
         if (taskType.equals(TaskTypes.TASK.toString())) {
-            return new Task(Integer.parseInt(taskId), TaskStatus.valueOf(taskStatus), taskTitle, taskDescription);
+            String startTime = split[5];
+            String duration = split[6];
+            return new Task(Integer.parseInt(taskId), TaskStatus.valueOf(taskStatus), taskTitle, taskDescription, Instant.parse(startTime), Duration.parse(duration));
         } else if (taskType.equals(TaskTypes.SUBTASK.toString())) {
-            String epicId = split[5];
+            String startTime = split[5];
+            String duration = split[6];
+            String epicId = split[7];
             return new Subtask(Integer.parseInt(taskId), TaskStatus.valueOf(taskStatus),
-                    taskTitle, taskDescription, Integer.parseInt(epicId));
+                    taskTitle, taskDescription, Instant.parse(startTime), Duration.parse(duration), Integer.parseInt(epicId));
         } else {
             return new Epic(Integer.parseInt(taskId), TaskStatus.valueOf(taskStatus), taskTitle, taskDescription);
         }
