@@ -19,7 +19,7 @@ public class InMemoryTaskManager implements TaskManager {
     protected HashMap<Integer, Task> tasks = new HashMap<>();
     protected HashMap<Integer, Subtask> subtasks = new HashMap<>();
     protected HashMap<Integer, Epic> epics = new HashMap<>();
-    public TreeSet<Task> prioritizedTasks = new TreeSet<>((t1, t2) -> {  // храним таски по приоритету
+    protected TreeSet<Task> prioritizedTasks = new TreeSet<>((t1, t2) -> {  // храним таски по приоритету
         if (t1.getStartTime() == null && t2.getStartTime() == null) {
             return 0;
         } else if (t1.getStartTime() == null) {
@@ -28,49 +28,47 @@ public class InMemoryTaskManager implements TaskManager {
             return 1;
         } else {
             return t1.getStartTime().compareTo(t2.getStartTime());
-
         }
     });
 
-    public void saveTaskByPriority(Task task){ // сохраняем таски по приоритету
-        Task oldTask;
+    public void saveTaskByPriority(Task task) { // сохраняем таски по приоритету
+        Task oldTask = null;
         boolean isTimeCorrect = true;
 
         if (task instanceof Subtask) {
-            oldTask=subtasks.get(task.getId());
+            oldTask = subtasks.get(task.getId());
         } else {
-            oldTask=tasks.get(task.getId());
+            oldTask = tasks.get(task.getId());
         }
-        if (oldTask!=null) {
+        if (oldTask != null) {
             prioritizedTasks.remove(oldTask);
         }
         try {
             for (Task prioritizedTask : prioritizedTasks) { // ищем пересечение по времени с каждой таской
                 if (task.getStartTime().isAfter(prioritizedTask.getStartTime()) && task.getStartTime().isBefore(prioritizedTask.getEndTime()) ||
-                        task.getEndTime().isBefore(prioritizedTask.getEndTime()) && task.getEndTime().isAfter(prioritizedTask.getStartTime())){
+                        task.getEndTime().isBefore(prioritizedTask.getEndTime()) && task.getEndTime().isAfter(prioritizedTask.getStartTime())) {
                     isTimeCorrect = false;
                     throw new IllegalArgumentException("Неверное время задачи");
                 } else {
                     isTimeCorrect = true;
                 }
             }
-        } catch (IllegalArgumentException e){ // task пересекается с существующей задачей
+        } catch (IllegalArgumentException e) { // task пересекается с существующей задачей
             System.out.println(e.getMessage());
-            prioritizedTasks.add(oldTask); // добавляем обратно старый таск, чтобы не потерять
             isTimeCorrect = false;
-        } catch (NullPointerException e){ // prioritizedTasks был пуст
+        } catch (NullPointerException e) { // prioritizedTasks был пуст
             isTimeCorrect = true;
         }
-        if(isTimeCorrect){
+        if (isTimeCorrect) {
             prioritizedTasks.add(task);
         }
     }
 
-    public TreeSet<Task> getPrioritizedTasks(){
+    public TreeSet<Task> getPrioritizedTasks() {
         return prioritizedTasks;
     }
 
-    public void SaveAllTasksByPriority(){ // формируем все задачи по приоритету
+    public void SaveAllTasksByPriority() { // формируем все задачи по приоритету
         for (Task task : tasks.values()) {
             saveTaskByPriority(task);
         }
@@ -224,11 +222,6 @@ public class InMemoryTaskManager implements TaskManager {
 
     @Override
     public void updateSubtask(Subtask subtask) {
-        TaskStatus oldStatus = subtasks.get(subtask.getId()).getStatus();
-        if (oldStatus.equals(subtask.getStatus())) { // если статус не поменялся - просто записываем новый субтаск
-            subtasks.put(subtask.getId(), subtask);
-            return;
-        }
         subtasks.put(subtask.getId(), subtask);  // если статус поменялся - пересчитываем статус эпика
         Epic epic = epics.get(subtask.getEpicId());
         changeEpicStatus(epic);

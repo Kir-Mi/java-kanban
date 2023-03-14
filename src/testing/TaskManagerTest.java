@@ -2,7 +2,6 @@ package testing;
 
 import manager.tasks.TaskManager;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import task.Epic;
 import task.Subtask;
@@ -14,9 +13,6 @@ import java.time.Instant;
 import java.util.List;
 import java.util.TreeSet;
 
-import static org.junit.jupiter.api.Assertions.*;
-
-
 abstract class TaskManagerTest<T extends TaskManager> {
 
     protected T manager;
@@ -26,6 +22,16 @@ abstract class TaskManagerTest<T extends TaskManager> {
     Task task2 = new Task("задача2", "описание задачи2", Instant.parse("2020-10-04T19:28:34Z"), Duration.parse("PT16H35M"));
     Subtask subtask1 = new Subtask("субтаск1", "описание субтаска1", 1, Instant.parse("2020-10-08T19:28:34Z"), Duration.parse("PT16H35M"));
     Subtask subtask2 = new Subtask("субтаск2", "описание субтаска2", 1, Instant.parse("2020-10-06T19:28:34Z"), Duration.parse("PT16H35M"));
+
+    @Test
+    public void getHistoryTest() {
+        manager.createTask(task1);
+        manager.getTaskById(1);
+        List<Task> actualHistory = manager.getHistory();
+
+        Assertions.assertEquals(task1, actualHistory.get(0), "Задачи не совпадают");
+        Assertions.assertEquals(1, actualHistory.size(), "Количество задач не совпадает");
+    }
 
     @Test
     public void getTaskListTest() {
@@ -202,11 +208,14 @@ abstract class TaskManagerTest<T extends TaskManager> {
         manager.createSubtask(subtask1, 1);
         manager.createSubtask(subtask2, 1);
         subtask1.setStatus(TaskStatus.DONE);
-        subtask2.setStatus(TaskStatus.DONE);
         manager.updateSubtask(subtask1);
+
+        Assertions.assertEquals(TaskStatus.IN_PROGRESS, epic1.getStatus(), "Статус не обновился");
+
+        subtask2.setStatus(TaskStatus.DONE);
         manager.updateSubtask(subtask2);
 
-        //Assertions.assertEquals(TaskStatus.DONE, epic1.getStatus(), "Статус не обновился");
+        Assertions.assertEquals(TaskStatus.DONE, epic1.getStatus(), "Статус не обновился");
     }
 
     @Test

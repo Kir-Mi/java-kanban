@@ -32,8 +32,8 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
         try {
             try {
                 List<String> lines = Files.readAllLines(saveFile); // сохраняем таски по промежуточным мапам
-                for (int i = 1; i < lines.size() - 2; i++) {
-                    if (lines.get(i) == null && lines.get(i - 1) != null && lines.get(i + 1) != null) {
+                for (int i = 1; i < lines.size() - 1; i++) {
+                    if (lines.get(i).equals("") && lines.get(i - 1).length() > 0 && lines.get(i + 1).length() > 0) {
                         history = historyFromString(lines.get(i + 1));
                         break;
                     }
@@ -58,10 +58,9 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
                 }
                 recovery.tasks = restoredTasks;
                 recovery.subtasks = restoredSubtasks;
-                for (Epic epic: recovery.epics.values()){   // подсчитываем временные показатели всех эпиков
+                for (Epic epic : recovery.epics.values()) {   // подсчитываем временные показатели всех эпиков
                     recovery.calculateEpicDuration(epic.getId());
                 }
-
                 for (Integer id : history) { // восстанавливаем историю просмотров
                     for (Task task : recovery.tasks.values()) {
                         if (id == task.getId()) {
@@ -99,7 +98,7 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
         return recovery;
     }
 
-    public void save() {
+    private void save() {
         try {
             try {
                 if (!Files.exists(saveFile)) {
@@ -119,7 +118,7 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
                 for (Task task : tasks.values()) {
                     fileWriter.write(taskToString(task) + "\n");
                 }
-                fileWriter.write(historyToString(viewsHistory) + "\n");
+                fileWriter.write("\n" + historyToString(viewsHistory) + "\n");
             } catch (IOException exception) {
                 throw new ManagerSaveException("Ошибка записи в файл");
             }
@@ -128,7 +127,7 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
         }
     }
 
-    public String taskToString(Task task) {
+    private String taskToString(Task task) {
         if (task instanceof Subtask) {
             Subtask subtask = (Subtask) task;
             return String.join(",", Integer.toString(subtask.getId()),
@@ -143,7 +142,7 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
         }
     }
 
-    public static Task taskFromString(String value) {
+    private static Task taskFromString(String value) {
         String[] split = value.split(",");
 
         String taskId = split[0];
@@ -167,7 +166,7 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
         }
     }
 
-    public static String historyToString(HistoryManager manager) {
+    private static String historyToString(HistoryManager manager) {
         List<Task> historyList = manager.getHistory();
         String[] idHistory = new String[historyList.size()];
         for (int i = 0; i < historyList.size(); i++) {
@@ -176,7 +175,7 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
         return String.join(",", idHistory);
     }
 
-    public static List<Integer> historyFromString(String value) {
+    private static List<Integer> historyFromString(String value) {
         String[] split = value.split(",");
         List<Integer> idHistory = new ArrayList<>();
         for (String id : split) {

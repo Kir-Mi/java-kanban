@@ -2,7 +2,6 @@ package task;
 
 import java.time.Duration;
 import java.time.Instant;
-import java.util.Objects;
 
 public class Task {
     private int id;
@@ -40,7 +39,7 @@ public class Task {
         this.duration = duration;
     }
 
-    public Instant getEndTime(){
+    public Instant getEndTime() {
         return startTime.plus(duration);
     }
 

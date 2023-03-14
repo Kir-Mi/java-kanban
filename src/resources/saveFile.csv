@@ -1,2 +1,7 @@
 id,type,name,status,description,start,duration,epic
+5,EPIC,эпик2,NEW,описание эпика2
+9,EPIC,эпик2,NEW,описание эпика2
+2,TASK,задача1,NEW,описание задачи1,2020-10-05T19:28:34Z,PT16H35M
+6,TASK,задача1,NEW,описание задачи1,2020-10-05T19:28:34Z,PT16H35M
 
+5,2,9,6
