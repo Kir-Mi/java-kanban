@@ -2,6 +2,7 @@ package testing;
 
 import manager.tasks.TaskManager;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import task.Epic;
 import task.Subtask;
@@ -16,12 +17,23 @@ import java.util.TreeSet;
 abstract class TaskManagerTest<T extends TaskManager> {
 
     protected T manager;
-    Epic epic1 = new Epic("эпик1", "описание эпика1"); // id всегда должен быть 1
-    Epic epic2 = new Epic("эпик2", "описание эпика2");
-    Task task1 = new Task("задача1", "описание задачи1", Instant.parse("2020-10-05T19:28:34Z"), Duration.parse("PT16H35M"));
-    Task task2 = new Task("задача2", "описание задачи2", Instant.parse("2020-10-04T19:28:34Z"), Duration.parse("PT16H35M"));
-    Subtask subtask1 = new Subtask("субтаск1", "описание субтаска1", 1, Instant.parse("2020-10-08T19:28:34Z"), Duration.parse("PT16H35M"));
-    Subtask subtask2 = new Subtask("субтаск2", "описание субтаска2", 1, Instant.parse("2020-10-06T19:28:34Z"), Duration.parse("PT16H35M"));
+    Epic epic1;
+    Epic epic2;
+    Task task1;
+    Task task2;
+    Subtask subtask1;
+    Subtask subtask2;
+
+    @BeforeEach
+    public void createUnits() {
+        epic1 = new Epic("эпик1", "описание эпика1"); // id всегда должен быть 1
+        epic2 = new Epic("эпик2", "описание эпика2");
+        task1 = new Task("задача1", "описание задачи1", Instant.parse("2020-10-05T19:28:34Z"), Duration.parse("PT16H35M"));
+        task2 = new Task("задача2", "описание задачи2", Instant.parse("2020-10-04T19:28:34Z"), Duration.parse("PT16H35M"));
+        subtask1 = new Subtask("субтаск1", "описание субтаска1", 1, Instant.parse("2020-10-08T19:28:34Z"), Duration.parse("PT16H35M"));
+        subtask2 = new Subtask("субтаск2", "описание субтаска2", 1, Instant.parse("2020-10-06T19:28:34Z"), Duration.parse("PT16H35M"));
+
+    }
 
     @Test
     public void getHistoryTest() {

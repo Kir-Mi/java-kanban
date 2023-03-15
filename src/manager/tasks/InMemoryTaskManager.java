@@ -6,12 +6,9 @@ import task.*;
 
 import java.time.Duration;
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.TreeSet;
+import java.util.*;
 
-public class InMemoryTaskManager implements TaskManager {
+public class InMemoryTaskManager implements TaskManager, Comparator<Task> {
 
     private int counterId = 1;
     protected HistoryManager viewsHistory = Managers.getDefaultHistory(); // храним историю просмотров
@@ -19,7 +16,10 @@ public class InMemoryTaskManager implements TaskManager {
     protected HashMap<Integer, Task> tasks = new HashMap<>();
     protected HashMap<Integer, Subtask> subtasks = new HashMap<>();
     protected HashMap<Integer, Epic> epics = new HashMap<>();
-    protected TreeSet<Task> prioritizedTasks = new TreeSet<>((t1, t2) -> {  // храним таски по приоритету
+    protected TreeSet<Task> prioritizedTasks = new TreeSet<>(this);  // храним таски по приоритету
+
+    @Override
+    public int compare(Task t1, Task t2) {
         if (t1.getStartTime() == null && t2.getStartTime() == null) {
             return 0;
         } else if (t1.getStartTime() == null) {
@@ -29,7 +29,7 @@ public class InMemoryTaskManager implements TaskManager {
         } else {
             return t1.getStartTime().compareTo(t2.getStartTime());
         }
-    });
+    }
 
     public void saveTaskByPriority(Task task) { // сохраняем таски по приоритету
         Task oldTask = null;
