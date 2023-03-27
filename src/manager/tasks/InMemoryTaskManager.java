@@ -10,7 +10,7 @@ import java.util.*;
 
 public class InMemoryTaskManager implements TaskManager, Comparator<Task> {
 
-    private int counterId = 1;
+    protected int counterId = 1;
     protected HistoryManager viewsHistory = Managers.getDefaultHistory(); // храним историю просмотров
 
     protected HashMap<Integer, Task> tasks = new HashMap<>();

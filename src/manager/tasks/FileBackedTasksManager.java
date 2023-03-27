@@ -15,10 +15,15 @@ import java.util.List;
 
 public class FileBackedTasksManager extends InMemoryTaskManager {
 
-    private final Path saveFile;
+    private  Path saveFile;
+    String url;
 
     public FileBackedTasksManager(Path saveFile) {
         this.saveFile = saveFile;
+    }
+
+    public FileBackedTasksManager(String url){
+        this.url = url;
     }
 
     public static FileBackedTasksManager loadFromFile(Path saveFile) {
@@ -98,7 +103,7 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
         return recovery;
     }
 
-    private void save() {
+    public void save() {
         try {
             try {
                 if (!Files.exists(saveFile)) {

@@ -1,17 +1,24 @@
 package main;
 
-import manager.tasks.FileBackedTasksManager;
+import manager.http.HttpTaskManager;
 import manager.tasks.TaskManager;
 import task.*;
 
-import java.nio.file.Path;
+import java.io.IOException;
 import java.time.Duration;
 import java.time.Instant;
 
 public class Main {
 
-    public static void main(String[] args) {
-        TaskManager taskManager = FileBackedTasksManager.loadFromFile(Path.of("src/resources/saveFile.csv"));
+    public static void main(String[] args) throws IOException {
+
+        TaskManager taskManager = new HttpTaskManager("http://localhost:8078");
+
+        //((HttpTaskManager) taskManager).load();
+
+        System.out.println(taskManager.getTaskList());
+
+
 
         /* код для тестирования оставил прежний. На гитхабе файл для восстановления, загружается корректно.
         По итогу запуска программы наполнение файла меняется. Первоначальный запуск без файла тоже работает ок.
@@ -72,13 +79,14 @@ public class Main {
         taskManager.getSubtaskById(subId2);
         System.out.println("Субтаск 2");
         System.out.println(taskManager.getHistory());
-        taskManager.deleteTask(taskId2);
+       /* taskManager.deleteTask(taskId2);
         System.out.println("Удалить задачу 2"); // смотрим, чтобы из истории тоже удалилась
         System.out.println(taskManager.getHistory());
         taskManager.deleteEpic(epicId1);
-        System.out.println("Удалить эпик 1");
+        System.out.println("Удалить эпик 1");*/
         System.out.println(taskManager.getHistory());
         System.out.println("Задачи по приоритету");
         System.out.println(taskManager.getPrioritizedTasks());
+        //((HttpTaskManager) taskManager).load();
     }
 }
