@@ -10,7 +10,7 @@ import java.util.ArrayList;
 import java.util.Objects;
 
 public class HttpTaskManager extends FileBackedTasksManager {
-    String url;
+    private String url;
     private KVTaskClient kvTaskClient;
     private Gson gson;
 
@@ -30,46 +30,56 @@ public class HttpTaskManager extends FileBackedTasksManager {
     }
 
     public void load() {
-        Type tasksType = new TypeToken<ArrayList<Task>>() {}.getType();
+        Type tasksType = new TypeToken<ArrayList<Task>>() {
+        }.getType();
 
         ArrayList<Task> recoveryTasks = gson.fromJson(kvTaskClient.load("tasks"), tasksType);
         if (Objects.nonNull(recoveryTasks)) {
-            recoveryTasks.forEach(task -> {
-                int id = task.getId();
-                tasks.put(id, task);
-                prioritizedTasks.add(task);
-                if (id > counterId) {
-                    counterId = id;
-                }
-            });
+            recoveryTasks.stream()
+                    .filter(Objects::nonNull)
+                    .forEach(task -> {
+                        int id = task.getId();
+                        tasks.put(id, task);
+                        prioritizedTasks.add(task);
+                        if (id > counterId) {
+                            counterId = id;
+                        }
+                    });
         }
 
-        Type subtasksType = new TypeToken<ArrayList<Subtask>>() {}.getType();
+        Type subtasksType = new TypeToken<ArrayList<Subtask>>() {
+        }.getType();
         ArrayList<Subtask> recoverySubtasks = gson.fromJson(kvTaskClient.load("subtasks"), subtasksType);
         if (Objects.nonNull(recoverySubtasks)) {
-            recoverySubtasks.forEach(subtask -> {
-                int id = subtask.getId();
-                subtasks.put(id, subtask);
-                prioritizedTasks.add(subtask);
-                if (id > counterId) {
-                    counterId = id;
-                }
-            });
+            recoverySubtasks.stream()
+                    .filter(Objects::nonNull)
+                    .forEach(subtask -> {
+                        int id = subtask.getId();
+                        subtasks.put(id, subtask);
+                        prioritizedTasks.add(subtask);
+                        if (id > counterId) {
+                            counterId = id;
+                        }
+                    });
         }
 
-        Type epicsType = new TypeToken<ArrayList<Epic>>() {}.getType();
+        Type epicsType = new TypeToken<ArrayList<Epic>>() {
+        }.getType();
         ArrayList<Epic> recoveryEpics = gson.fromJson(kvTaskClient.load("epics"), epicsType);
         if (Objects.nonNull(recoveryEpics)) {
-            recoveryEpics.forEach(epic -> {
-                int id = epic.getId();
-                epics.put(id, epic);
-                if (id > counterId) {
-                    counterId = id;
-                }
-            });
+            recoveryEpics.stream()
+                    .filter(Objects::nonNull)
+                    .forEach(epic -> {
+                        int id = epic.getId();
+                        epics.put(id, epic);
+                        if (id > counterId) {
+                            counterId = id;
+                        }
+                    });
         }
 
-        Type historyType = new TypeToken<ArrayList<Task>>() {}.getType();
+        Type historyType = new TypeToken<ArrayList<Task>>() {
+        }.getType();
         ArrayList<Task> history = gson.fromJson(kvTaskClient.load("history"), historyType);
         if (Objects.nonNull(history)) {
             for (Task task : history) {

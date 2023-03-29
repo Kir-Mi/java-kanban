@@ -19,6 +19,9 @@ public class InMemoryHistoryManager implements HistoryManager {
 
     @Override
     public void add(Task task) {
+        if (task == null) {
+            return;
+        }
         if (nodeToDelete.get(task.getId()) == null) {
             nodeToDelete.put(task.getId(), orderOfViews.linkLast(task));
         } else {

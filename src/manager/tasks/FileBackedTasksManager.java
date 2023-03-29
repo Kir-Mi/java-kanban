@@ -1,6 +1,5 @@
 package manager.tasks;
 
-import exceptions.ManagerSaveException;
 import manager.history.HistoryManager;
 import task.*;
 
@@ -15,14 +14,14 @@ import java.util.List;
 
 public class FileBackedTasksManager extends InMemoryTaskManager {
 
-    private  Path saveFile;
+    private Path saveFile;
     String url;
 
     public FileBackedTasksManager(Path saveFile) {
         this.saveFile = saveFile;
     }
 
-    public FileBackedTasksManager(String url){
+    public FileBackedTasksManager(String url) {
         this.url = url;
     }
 
@@ -35,69 +34,66 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
         int restoredCounterId = 1;
 
         try {
-            try {
-                List<String> lines = Files.readAllLines(saveFile); // сохраняем таски по промежуточным мапам
-                for (int i = 1; i < lines.size() - 1; i++) {
-                    if (lines.get(i).equals("") && lines.get(i - 1).length() > 0 && lines.get(i + 1).length() > 0) {
-                        history = historyFromString(lines.get(i + 1));
-                        break;
-                    }
-                    Task restoredTask = taskFromString(lines.get(i));
-                    if (restoredTask instanceof Epic) {
-                        restoredEpics.put(restoredTask.getId(), (Epic) restoredTask);
-                    } else if (restoredTask instanceof Subtask) {
-                        restoredSubtasks.put(restoredTask.getId(), (Subtask) restoredTask);
-                    } else {
-                        restoredTasks.put(restoredTask.getId(), restoredTask);
-                    }
+            List<String> lines = Files.readAllLines(saveFile); // сохраняем таски по промежуточным мапам
+            for (int i = 1; i < lines.size() - 1; i++) {
+                if (lines.get(i).equals("") && lines.get(i - 1).length() > 0 && lines.get(i + 1).length() > 0) {
+                    history = historyFromString(lines.get(i + 1));
+                    break;
                 }
-                for (Epic epic : restoredEpics.values()) { // формируем список SubtaskId у эпиков
-                    ArrayList<Integer> idList = new ArrayList<>();
-                    for (Subtask subtask : restoredSubtasks.values()) {
-                        if (epic.getId() == subtask.getEpicId()) {
-                            idList.add(subtask.getId());
-                        }
-                    }
-                    epic.setSubtaskId(idList);
-                    recovery.epics.put(epic.getId(), epic);
+                Task restoredTask = taskFromString(lines.get(i));
+                if (restoredTask instanceof Epic) {
+                    restoredEpics.put(restoredTask.getId(), (Epic) restoredTask);
+                } else if (restoredTask instanceof Subtask) {
+                    restoredSubtasks.put(restoredTask.getId(), (Subtask) restoredTask);
+                } else {
+                    restoredTasks.put(restoredTask.getId(), restoredTask);
                 }
-                recovery.tasks = restoredTasks;
-                recovery.subtasks = restoredSubtasks;
-                for (Epic epic : recovery.epics.values()) {   // подсчитываем временные показатели всех эпиков
-                    recovery.calculateEpicDuration(epic.getId());
-                }
-                for (Integer id : history) { // восстанавливаем историю просмотров
-                    for (Task task : recovery.tasks.values()) {
-                        if (id == task.getId()) {
-                            recovery.viewsHistory.add(task);
-                        }
-                        if (task.getId() > restoredCounterId) { // вычисляем максимальный из имеющихся id
-                            restoredCounterId = task.getId();
-                        }
-                    }
-                    for (Subtask subtask : recovery.subtasks.values()) {
-                        if (id == subtask.getId()) {
-                            recovery.viewsHistory.add(subtask);
-                        }
-                        if (subtask.getId() > restoredCounterId) {
-                            restoredCounterId = subtask.getId();
-                        }
-                    }
-                    for (Epic epic : recovery.epics.values()) {
-                        if (id == epic.getId()) {
-                            recovery.viewsHistory.add(epic);
-                        }
-                        if (epic.getId() > restoredCounterId) {
-                            restoredCounterId = epic.getId();
-                        }
-                    }
-                }
-            } catch (IOException exception) {
-                throw new ManagerSaveException("Ошибка чтения файла");
             }
-        } catch (ManagerSaveException exception) {
-            System.out.println(exception.getMessage());
+            for (Epic epic : restoredEpics.values()) { // формируем список SubtaskId у эпиков
+                ArrayList<Integer> idList = new ArrayList<>();
+                for (Subtask subtask : restoredSubtasks.values()) {
+                    if (epic.getId() == subtask.getEpicId()) {
+                        idList.add(subtask.getId());
+                    }
+                }
+                epic.setSubtaskId(idList);
+                recovery.epics.put(epic.getId(), epic);
+            }
+            recovery.tasks = restoredTasks;
+            recovery.subtasks = restoredSubtasks;
+            for (Epic epic : recovery.epics.values()) {   // подсчитываем временные показатели всех эпиков
+                recovery.calculateEpicDuration(epic.getId());
+            }
+            for (Integer id : history) { // восстанавливаем историю просмотров
+                for (Task task : recovery.tasks.values()) {
+                    if (id == task.getId()) {
+                        recovery.viewsHistory.add(task);
+                    }
+                    if (task.getId() > restoredCounterId) { // вычисляем максимальный из имеющихся id
+                        restoredCounterId = task.getId();
+                    }
+                }
+                for (Subtask subtask : recovery.subtasks.values()) {
+                    if (id == subtask.getId()) {
+                        recovery.viewsHistory.add(subtask);
+                    }
+                    if (subtask.getId() > restoredCounterId) {
+                        restoredCounterId = subtask.getId();
+                    }
+                }
+                for (Epic epic : recovery.epics.values()) {
+                    if (id == epic.getId()) {
+                        recovery.viewsHistory.add(epic);
+                    }
+                    if (epic.getId() > restoredCounterId) {
+                        restoredCounterId = epic.getId();
+                    }
+                }
+            }
+        } catch (IOException exception) {
+            System.out.println("Ошибка чтения файла");
         }
+
         recovery.setCounterId(restoredCounterId + 1); // восстанавливаем значение CounterId
         recovery.SaveAllTasksByPriority(); // восстанавливаем список тасков по приоритету
         return recovery;
@@ -105,30 +101,26 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
 
     public void save() {
         try {
-            try {
-                if (!Files.exists(saveFile)) {
-                    Files.createFile(saveFile);
-                }
-            } catch (IOException exception) {
-                throw new ManagerSaveException("Ошибка создания файла");
+            if (!Files.exists(saveFile)) {
+                Files.createFile(saveFile);
             }
-            try (Writer fileWriter = new FileWriter(saveFile.toFile());) {
-                fileWriter.write("id,type,name,status,description,start,duration,epic\n");
-                for (Epic epic : epics.values()) {
-                    fileWriter.write(taskToString(epic) + "\n");
-                    for (int subId : epic.getSubtaskId()) {
-                        fileWriter.write(taskToString(subtasks.get(subId)) + "\n");
-                    }
+        } catch (IOException exception) {
+            System.out.println("Ошибка создания файла");
+        }
+        try (Writer fileWriter = new FileWriter(saveFile.toFile());) {
+            fileWriter.write("id,type,name,status,description,start,duration,epic\n");
+            for (Epic epic : epics.values()) {
+                fileWriter.write(taskToString(epic) + "\n");
+                for (int subId : epic.getSubtaskId()) {
+                    fileWriter.write(taskToString(subtasks.get(subId)) + "\n");
                 }
-                for (Task task : tasks.values()) {
-                    fileWriter.write(taskToString(task) + "\n");
-                }
-                fileWriter.write("\n" + historyToString(viewsHistory) + "\n");
-            } catch (IOException exception) {
-                throw new ManagerSaveException("Ошибка записи в файл");
             }
-        } catch (ManagerSaveException exception) {
-            System.out.println(exception.getMessage());
+            for (Task task : tasks.values()) {
+                fileWriter.write(taskToString(task) + "\n");
+            }
+            fileWriter.write("\n" + historyToString(viewsHistory) + "\n");
+        } catch (IOException exception) {
+            System.out.println("Ошибка записи в файл");
         }
     }
 
